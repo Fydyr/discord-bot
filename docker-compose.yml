@@ -1,0 +1,21 @@
+services:
+  app:
+    container_name: ${NAME}
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        GIT_URL: https://github.com/Fydyr/discord-bot.git
+        GIT_BRANCH: main
+    networks:
+      - lan
+    restart: unless-stopped
+    environment:
+      DISCORD_TOKEN: "${DISCORD_TOKEN}"
+      DISCORD_GUILD_ID: "${DISCORD_GUILD_ID}"
+      NODE_ENV: production
+
+networks:
+  lan:
+    external: false
+    name: lan_${NAME}
