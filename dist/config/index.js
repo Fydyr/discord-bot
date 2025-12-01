@@ -10,6 +10,6 @@ exports.config = {
     token: process.env.DISCORD_TOKEN || "",
     guildId: process.env.DISCORD_GUILD_ID || "",
     clientId: process.env.CLIENT_ID || "",
-    weatherApiKey: process.env.WEATHER_API_KEY || "",
+    statusChannelId: "1445021631213994036",
 };
 //# sourceMappingURL=index.js.map
