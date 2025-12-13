@@ -19,7 +19,7 @@ export const bot = new Client({
   botGuilds: config.guildId ? [config.guildId] : undefined,
 });
 
-bot.once("ready", async () => {
+bot.once("clientReady", async () => {
   await bot.clearApplicationCommands();
   await bot.initApplicationCommands();
   console.log(`Bot ${bot.user?.tag} is ready!`);
@@ -31,15 +31,23 @@ bot.once("ready", async () => {
     console.error("Erreur lors de l'envoi du message de démarrage:", error);
   }
 
-  // Planifier l'envoi quotidien d'anecdotes (tous les jours à 20h00)
-  cron.schedule("0 20 * * *", async () => {
-    await LoggerService.info("🕐 Envoi de l'anecdote quotidienne...");
+  // Planifier l'envoi quotidien d'anecdotes (tous les jours à 10h00)
+  cron.schedule("0 10 * * *", async () => {
+    await LoggerService.info("🕐 Envoi de l'anecdote quotidienne (10h)...");
     await AnecdoteService.sendDailyAnecdote();
   }, {
     timezone: "Europe/Paris"
   });
 
-  await LoggerService.info("📅 Planificateur d'anecdotes quotidiennes activé (20h00 chaque jour)");
+  // Planifier l'envoi quotidien d'anecdotes (tous les jours à 20h00)
+  cron.schedule("0 20 * * *", async () => {
+    await LoggerService.info("🕐 Envoi de l'anecdote quotidienne (20h)...");
+    await AnecdoteService.sendDailyAnecdote();
+  }, {
+    timezone: "Europe/Paris"
+  });
+
+  await LoggerService.info("📅 Planificateur d'anecdotes quotidiennes activé (10h00 et 20h00 chaque jour)");
 });
 
 bot.on("interactionCreate", (interaction) => {
@@ -62,4 +70,4 @@ async function run() {
   await bot.login(config.token);
 }
 
-run(); 
+run();

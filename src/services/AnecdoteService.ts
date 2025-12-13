@@ -1,8 +1,9 @@
-import { TextChannel } from "discord.js";
+import { TextChannel, EmbedBuilder } from "discord.js";
 import { bot } from "../index";
 import { config } from "../config";
 import axios from "axios";
 import { LoggerService } from "./LoggerService";
+import { GeminiService } from "./GeminiService";
 
 interface Anecdote {
   title: string;
@@ -12,21 +13,38 @@ interface Anecdote {
 
 export class AnecdoteService {
   private static readonly TECH_TOPICS = [
-    "Computer_science",
-    "Programming_language",
-    "Algorithm",
-    "Artificial_intelligence",
-    "Internet",
-    "Computer_hardware",
-    "Software_engineering",
-    "Operating_system",
-    "Database",
-    "Cryptography",
-    "Computer_network",
-    "Machine_learning",
-    "Quantum_computing",
-    "Cybersecurity",
-    "Cloud_computing",
+    // Langages de programmation
+    "Python_(langage)", "Java_(langage)", "JavaScript", "C_(langage)", "C%2B%2B",
+    "Ruby_(langage)", "PHP", "Rust_(langage)", "Go_(langage)", "TypeScript",
+
+    // Entreprises et personnalités tech
+    "Steve_Jobs", "Bill_Gates", "Linus_Torvalds", "Alan_Turing", "Grace_Hopper",
+    "Ada_Lovelace", "Tim_Berners-Lee", "Elon_Musk", "Mark_Zuckerberg",
+    "Apple", "Microsoft", "Google", "Amazon_(entreprise)", "Meta_(entreprise)",
+    "Tesla_(entreprise)", "Netflix", "Nvidia", "Intel", "AMD",
+
+    // Technologies et innovations
+    "World_Wide_Web", "Bitcoin", "Blockchain", "ChatGPT", "DeepMind",
+    "Linux", "Android", "iOS", "Windows", "MacOS",
+    "Cloud_computing", "Machine_learning", "Deep_learning",
+    "Réalité_virtuelle", "Réalité_augmentée", "Metaverse",
+
+    // Événements et concepts
+    "Bug_de_l'an_2000", "Arpanet", "Premier_ordinateur", "Ordinateur_quantique",
+    "Transistor", "Microprocesseur", "Puce_électronique", "RAM_(informatique)",
+    "SSD", "GPU", "Internet_des_objets", "5G", "Fibre_optique",
+
+    // Logiciels et plateformes
+    "GitHub", "Stack_Overflow", "Reddit", "Discord_(logiciel)", "Slack_(plateforme)",
+    "Visual_Studio_Code", "Docker_(logiciel)", "Kubernetes",
+
+    // Jeux vidéo et gaming
+    "Minecraft", "Fortnite", "League_of_Legends", "PlayStation", "Xbox",
+    "Nintendo", "Steam_(plateforme)", "Twitch_(service)",
+
+    // Sécurité et cyberattaques
+    "WannaCry", "Ransomware", "Phishing", "Pare-feu_(informatique)",
+    "Chiffrement", "VPN", "Tor_(réseau)"
   ];
 
   public static async sendDailyAnecdote(): Promise<void> {
@@ -51,11 +69,14 @@ export class AnecdoteService {
         return;
       }
 
-      // Formater le message
-      const message = this.formatAnecdote(anecdote);
+      // Créer l'embed
+      const embed = this.createAnecdoteEmbed(anecdote);
 
-      // Envoyer le message
-      await channel.send(message);
+      // Envoyer le message avec mention du rôle
+      await channel.send({
+        content: "<@&1419413598718918758>",
+        embeds: [embed]
+      });
       await LoggerService.success(`Anecdote quotidienne envoyée : ${anecdote.title}`);
     } catch (error) {
       await LoggerService.error(`Erreur lors de l'envoi de l'anecdote quotidienne: ${error}`);
@@ -64,24 +85,35 @@ export class AnecdoteService {
 
   private static async fetchAnecdoteFromWeb(): Promise<Anecdote | null> {
     try {
-      // Tenter de récupérer des faits depuis plusieurs sources
-      const sources = [
-        this.fetchFromWikipedia.bind(this),
-        this.fetchFromAPIninjas.bind(this),
-        this.fetchFromOpenTriviaDB.bind(this),
-      ];
+      console.log(`🤖 Tentative de génération d'anecdote via Gemini...`);
 
-      // Essayer chaque source jusqu'à ce qu'une fonctionne
-      for (const fetchFn of sources) {
-        try {
-          const anecdote = await fetchFn();
-          if (anecdote) {
-            return anecdote;
-          }
-        } catch (error) {
-          // Passer silencieusement à la source suivante
-          continue;
-        }
+      // Essayer d'abord avec Gemini
+      const geminiResult = await GeminiService.generateTechAnecdote();
+      if (geminiResult) {
+        console.log(`✅ Anecdote générée avec succès via Gemini`);
+
+        // Ajouter "Généré par Gemini" comme première source
+        const sources = [
+          {
+            name: "Généré par IA (Gemini)",
+            url: "https://ai.google.dev/gemini-api"
+          },
+          ...geminiResult.sources // Ajouter les sources fournies par Gemini
+        ];
+
+        return {
+          title: `🤖 ${geminiResult.title}`,
+          paragraphs: geminiResult.paragraphs,
+          sources
+        };
+      }
+
+      // Fallback sur Wikipedia si Gemini échoue
+      console.log(`⚠️ Gemini non disponible, fallback sur Wikipedia...`);
+      const anecdote = await this.fetchFromWikipedia();
+      if (anecdote) {
+        console.log(`✅ Anecdote récupérée avec succès depuis Wikipedia`);
+        return anecdote;
       }
 
       return null;
@@ -96,11 +128,23 @@ export class AnecdoteService {
       // Choisir un sujet tech aléatoire
       const randomTopic = this.TECH_TOPICS[Math.floor(Math.random() * this.TECH_TOPICS.length)];
 
+      console.log(`Tentative Wikipedia pour: ${randomTopic}`);
+
+      // Utiliser Wikipedia FRANÇAIS avec un User-Agent valide
       const response = await axios.get(
-        `https://en.wikipedia.org/api/rest_v1/page/summary/${randomTopic}`
+        `https://fr.wikipedia.org/api/rest_v1/page/summary/${randomTopic}`,
+        {
+          headers: {
+            'User-Agent': 'Discord Bot Anecdotes/1.0 (https://github.com; contact@example.com)',
+            'Api-User-Agent': 'Discord Bot Anecdotes/1.0'
+          }
+        }
       );
 
+      console.log("Réponse Wikipedia reçue:", response.status);
+
       if (!response.data || !response.data.extract) {
+        console.log("Pas de données ou d'extrait dans la réponse");
         return null;
       }
 
@@ -145,117 +189,45 @@ export class AnecdoteService {
         sources: [
           {
             name: "Wikipedia",
-            url: data.content_urls?.desktop?.page || `https://en.wikipedia.org/wiki/${randomTopic}`,
+            url: data.content_urls?.desktop?.page || `https://fr.wikipedia.org/wiki/${randomTopic}`,
           },
         ],
       };
     } catch (error) {
       // Erreur Wikipedia, retour null pour passer à la source suivante
+      console.error("Erreur Wikipedia complète:", error);
       return null;
     }
   }
 
-  private static async fetchFromAPIninjas(): Promise<Anecdote | null> {
-    try {
-      // Note: API Ninjas nécessite une clé API gratuite
-      // Les utilisateurs devront s'inscrire sur https://api-ninjas.com/
-      const apiKey = process.env.API_NINJAS_KEY;
+  private static createAnecdoteEmbed(anecdote: Anecdote): EmbedBuilder {
+    const embed = new EmbedBuilder()
+      .setTitle(anecdote.title)
+      .setColor(0x5865F2) // Couleur bleu Discord
+      .setTimestamp();
 
-      if (!apiKey) {
-        // API_NINJAS_KEY non configurée, passage à la source suivante
-        return null;
-      }
+    // Ajouter les paragraphes comme description
+    const description = anecdote.paragraphs.join("\n\n");
+    embed.setDescription(description);
 
-      const response = await axios.get("https://api.api-ninjas.com/v1/facts?limit=3", {
-        headers: { "X-Api-Key": apiKey },
+    // Ajouter les sources dans le footer
+    const sourcesText = anecdote.sources
+      .map((source) => `${source.name}`)
+      .join(" | ");
+    embed.setFooter({ text: `Sources: ${sourcesText}` });
+
+    // Ajouter les liens des sources comme champs si on veut les rendre cliquables
+    if (anecdote.sources.length > 0) {
+      const sourcesLinks = anecdote.sources
+        .map((source) => `[${source.name}](${source.url})`)
+        .join(" • ");
+      embed.addFields({
+        name: "🔗 Sources",
+        value: sourcesLinks,
+        inline: false
       });
-
-      if (!response.data || response.data.length === 0) {
-        return null;
-      }
-
-      const facts = response.data;
-      const paragraphs = facts.map((fact: { fact: string }) => fact.fact);
-
-      return {
-        title: "🔬 Le saviez-vous ?",
-        paragraphs: paragraphs.slice(0, 3),
-        sources: [
-          {
-            name: "API Ninjas",
-            url: "https://api-ninjas.com/api/facts",
-          },
-        ],
-      };
-    } catch (error) {
-      // Erreur API Ninjas, retour null pour passer à la source suivante
-      return null;
-    }
-  }
-
-  private static async fetchFromOpenTriviaDB(): Promise<Anecdote | null> {
-    try {
-      // Catégorie 18 = Science: Computers
-      const response = await axios.get(
-        "https://opentdb.com/api.php?amount=3&category=18&type=multiple"
-      );
-
-      if (!response.data || !response.data.results || response.data.results.length === 0) {
-        return null;
-      }
-
-      const questions = response.data.results;
-      const paragraphs = questions.map((q: any) => {
-        const question = this.decodeHTML(q.question);
-        const answer = this.decodeHTML(q.correct_answer);
-        return `${question} Réponse : ${answer}`;
-      });
-
-      return {
-        title: "🎯 Quiz informatique du jour",
-        paragraphs: paragraphs.slice(0, 3),
-        sources: [
-          {
-            name: "Open Trivia Database",
-            url: "https://opentdb.com/",
-          },
-        ],
-      };
-    } catch (error) {
-      // Erreur OpenTriviaDB, retour null pour passer à la source suivante
-      return null;
-    }
-  }
-
-  private static decodeHTML(html: string): string {
-    const entities: { [key: string]: string } = {
-      "&quot;": '"',
-      "&#039;": "'",
-      "&amp;": "&",
-      "&lt;": "<",
-      "&gt;": ">",
-      "&nbsp;": " ",
-    };
-
-    return html.replace(/&[#\w]+;/g, (entity) => entities[entity] || entity);
-  }
-
-  private static formatAnecdote(anecdote: Anecdote): string {
-    let message = `# ${anecdote.title}\n`;
-
-    // Ajouter les paragraphes avec le format de citation
-    for (const paragraph of anecdote.paragraphs) {
-      message += `> \n> ${paragraph}\n`;
     }
 
-    // Ajouter les sources
-    message += `> \n`;
-    const sourcesLinks = anecdote.sources.map((source) => `[${source.name}](${source.url})`).join(" | ");
-    message += `> ${sourcesLinks}\n`;
-
-    // Ajouter la mention du rôle
-    message += `>\n> <@&1419413598718918758>`;
-
-    return message;
+    return embed;
   }
 }
