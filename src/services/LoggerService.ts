@@ -41,10 +41,14 @@ export class LoggerService {
     // Toujours afficher dans la console (OBLIGATOIRE - ne pas remplacer)
     console.log(`[${timestamp}] ${formattedMessage}`);
 
+    let discordSent = false;
+
     // Essayer d'envoyer via webhook en priorité
     if (config.logWebhookUrl) {
       try {
         await this.sendViaWebhook(message, level, timestamp);
+        console.log(`[${timestamp}] ✅ Log envoyé sur Discord (webhook)`);
+        discordSent = true;
         return;
       } catch (error) {
         // Console.error ici est OK car c'est une erreur interne du LoggerService
@@ -56,10 +60,19 @@ export class LoggerService {
     if (config.statusChannelId) {
       try {
         await this.sendViaChannel(formattedMessage);
+        console.log(`[${timestamp}] ✅ Log envoyé sur Discord (channel)`);
+        discordSent = true;
       } catch (error) {
         // Console.error ici est OK car c'est une erreur interne du LoggerService
         console.error(`[${timestamp}] ⚠️ Erreur envoi Discord:`, error);
       }
+    }
+
+    // Si aucun envoi Discord n'a réussi
+    if (!discordSent && (config.logWebhookUrl || config.statusChannelId)) {
+      console.log(`[${timestamp}] ❌ Log NON envoyé sur Discord (échec)`);
+    } else if (!config.logWebhookUrl && !config.statusChannelId) {
+      console.log(`[${timestamp}] ⚠️ Log NON envoyé sur Discord (non configuré)`);
     }
   }
 
