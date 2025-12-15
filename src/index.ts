@@ -39,6 +39,14 @@ bot.once("clientReady", async () => {
     timezone: "Europe/Paris"
   });
 
+  // Planifier l'envoi quotidien d'anecdotes (tous les jours à 15h00)
+  cron.schedule("0 15 * * *", async () => {
+    await LoggerService.info("🕐 Envoi de l'anecdote quotidienne (15h)...");
+    await AnecdoteService.sendDailyAnecdote();
+  }, {
+    timezone: "Europe/Paris"
+  });
+
   // Planifier l'envoi quotidien d'anecdotes (tous les jours à 20h00)
   cron.schedule("0 20 * * *", async () => {
     await LoggerService.info("🕐 Envoi de l'anecdote quotidienne (20h)...");
@@ -47,7 +55,7 @@ bot.once("clientReady", async () => {
     timezone: "Europe/Paris"
   });
 
-  await LoggerService.info("📅 Planificateur d'anecdotes quotidiennes activé (10h00 et 20h00 chaque jour)");
+  await LoggerService.info("📅 Planificateur d'anecdotes quotidiennes activé (10h00, 15h00 et 20h00 chaque jour)");
 });
 
 bot.on("interactionCreate", (interaction) => {
