@@ -38,17 +38,9 @@ bot.once("clientReady", async () => {
   AutoModerationService.setEnabled(config.autoModEnabled);
   await LoggerService.info(`🛡️ Système de modération initialisé (AutoMod: ${config.autoModEnabled ? "activé" : "désactivé"})`);
 
-  // Planifier l'envoi quotidien d'anecdotes (tous les jours à 10h00)
-  cron.schedule("0 10 * * *", async () => {
-    await LoggerService.info("🕐 Envoi de l'anecdote quotidienne (10h)...");
-    await AnecdoteService.sendDailyAnecdote();
-  }, {
-    timezone: "Europe/Paris"
-  });
-
-  // Planifier l'envoi quotidien d'anecdotes (tous les jours à 15h00)
-  cron.schedule("0 15 * * *", async () => {
-    await LoggerService.info("🕐 Envoi de l'anecdote quotidienne (15h)...");
+  // Planifier l'envoi quotidien d'anecdotes (tous les jours à 8h00)
+  cron.schedule("0 8 * * *", async () => {
+    await LoggerService.info("🕐 Envoi de l'anecdote quotidienne (8h)...");
     await AnecdoteService.sendDailyAnecdote();
   }, {
     timezone: "Europe/Paris"
