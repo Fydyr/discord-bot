@@ -47,25 +47,29 @@ Critères :
 - L'anecdote doit être vraie et vérifiable
 - Elle doit être intéressante et surprenante
 - Évite les faits trop connus (comme "Bill Gates a créé Microsoft")
+- VARIE les sujets pour ne pas parler toujours de la même chose
 
-PRIORITÉ ABSOLUE - Sujets d'actualité informatique (2023-2025) :
-- Intelligence artificielle (ChatGPT, Claude, Gemini, LLMs, etc.)
-- Cybersécurité récente (failles de sécurité, ransomwares, piratages célèbres)
-- Nouvelles technologies (ordinateurs quantiques, blockchain, Web3)
-- Actualité des grandes entreprises tech (Meta, Google, OpenAI, Microsoft, Apple, etc.)
-- Nouveaux langages et frameworks populaires
-- Événements tech récents marquants
-- Innovations matérielles (nouveaux processeurs, GPUs, etc.)
-- Actualité des jeux vidéo (nouveaux jeux, mises à jour majeures, événements gaming)
-- Valve et Steam (nouveautés, Steam Deck, Half-Life, Portal, Counter-Strike, etc.)
-- Industrie du jeu vidéo (moteurs de jeu, technologies graphiques, VR/AR gaming)
-
-Si aucun sujet d'actualité récente n'est disponible, tu peux aussi parler de :
-- Détails historiques fascinants de l'informatique
-- Bugs célèbres et leurs conséquences
+Sujets suggérés (choisis-en un au hasard, varie les thèmes) :
+- Histoire de l'informatique et anecdotes historiques fascinantes
+- Bugs célèbres et leurs conséquences inattendues
 - Innovations qui ont changé le monde
-- Personnalités tech méconnues
-- Anecdotes sur : langages de programmation, jeux vidéo, internet, etc.
+- Personnalités tech méconnues et leurs contributions
+- Langages de programmation et leurs origines surprenantes
+- Jeux vidéo cultes et leur développement
+- Valve et Steam (histoire, Steam Deck, Half-Life, Portal, Counter-Strike, etc.)
+- Internet et le Web (premières pages, protocoles, culture internet)
+- Matériel informatique (processeurs, mémoire, stockage)
+- Systèmes d'exploitation et leur évolution
+- Cryptographie et sécurité informatique
+- Grandes entreprises tech et leur histoire
+- Open source et logiciels libres
+- Compétitions de programmation et hackatons
+- Easter eggs et secrets cachés dans les logiciels
+- Événements marquants de l'industrie tech
+
+Tu peux aussi parler occasionnellement de sujets récents (2023-2025) mais sans en faire une priorité :
+- Actualité technologique récente si elle est vraiment marquante
+- Nouvelles innovations significatives
 
 Format de réponse (très important, respecte exactement ce format JSON) :
 {
